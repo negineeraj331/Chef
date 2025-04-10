@@ -1,0 +1,33 @@
+<div class="card recipe-card h-100">
+    {% if recipe.image %}
+    <img src="{{ recipe.image }}" class="card-img-top" alt="{{ recipe.title }}">
+    {% else %}
+    <div class="card-img-top placeholder-img">
+        <i class="fas fa-utensils fa-3x text-muted"></i>
+    </div>
+    {% endif %}
+    <div class="card-body">
+        <h3 class="card-title">{{ recipe.title }}</h3>
+        <div class="recipe-card-meta mb-2">
+            <span class="badge bg-primary"><i class="fas fa-clock"></i> {{ recipe.readyInMinutes }} min</span>
+            <span class="badge bg-success"><i class="fas fa-users"></i> {{ recipe.servings }} servings</span>
+            {% if recipe.vegetarian %}
+                <span class="badge bg-success"><i class="fas fa-leaf"></i></span>
+            {% endif %}
+            {% if recipe.vegan %}
+                <span class="badge bg-success"><i class="fas fa-seedling"></i></span>
+            {% endif %}
+            {% if recipe.glutenFree %}
+                <span class="badge bg-info"><i class="fas fa-wheat-alt"></i></span>
+            {% endif %}
+        </div>
+        {% if recipe.summary %}
+        <p class="card-text text-truncate-3">
+            {{ recipe.summary|striptags|truncate(100) }}
+        </p>
+        {% endif %}
+    </div>
+    <div class="card-footer bg-transparent border-top-0">
+        <a href="{{ url_for('recipe', recipe_id=recipe.id) }}" class="btn btn-primary">View Recipe</a>
+    </div>
+</div>

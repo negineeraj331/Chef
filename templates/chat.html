@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card chat-card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-robot me-2"></i> Chef AI Assistant
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="chat-container" id="chatContainer">
+                    <div class="chat-message assistant">
+                        <div class="chat-message-content">
+                            <p>Hello! I'm Chef AI, your cooking assistant. I can help you with recipes, cooking techniques, ingredient substitutions, and more. What would you like to know about cooking today?</p>
+                        </div>
+                    </div>
+                    <!-- Chat messages will be inserted here -->
+                </div>
+                
+                <div class="chat-input-container mt-3">
+                    <form id="chatForm" class="d-flex">
+                        <input type="text" id="userInput" class="form-control" placeholder="Ask about a recipe, cooking technique, or meal idea..." required>
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="chat-suggestions mt-3">
+                    <p class="text-muted small">Suggestions:</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-sm btn-outline-secondary suggestion-btn" data-suggestion="How do I make pasta from scratch?">Homemade pasta</button>
+                        <button class="btn btn-sm btn-outline-secondary suggestion-btn" data-suggestion="What's a good substitute for eggs in baking?">Egg substitutes</button>
+                        <button class="btn btn-sm btn-outline-secondary suggestion-btn" data-suggestion="How do I make perfect fried rice?">Perfect fried rice</button>
+                        <button class="btn btn-sm btn-outline-secondary suggestion-btn" data-suggestion="Give me a quick dinner idea with chicken.">Quick chicken dinner</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="text-muted small me-3">AI Provider:</span>
+                        <select id="aiProvider" class="form-select form-select-sm" style="width: auto;">
+                            <option value="openrouter" selected>OpenRouter</option>
+                            {% if openai_available %}
+                            <option value="openai">OpenAI</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <button id="clearChat" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i> Clear Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Recipes
+            </a>
+            <a href="{{ url_for('meal_plan') }}" class="btn btn-primary">
+                <i class="fas fa-calendar-alt"></i> Create Meal Plan
+            </a>
+        </div>
+    </div>
+</div>
+
+{% include 'includes/loading.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

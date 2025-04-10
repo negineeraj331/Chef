@@ -1,0 +1,123 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <h1 class="mb-4">Create Your Meal Plan</h1>
+        
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form id="mealPlanForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="timeFrame" class="form-label">Time Frame</label>
+                        <select id="timeFrame" class="form-select">
+                            <option value="day">Day (3 meals)</option>
+                            <option value="week">Week (21 meals)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="targetCalories" class="form-label">Target Calories</label>
+                        <input type="range" class="form-range" id="targetCalories" min="1200" max="3000" step="100" value="2000">
+                        <div class="d-flex justify-content-between">
+                            <small>1200 cal</small>
+                            <small id="calorieValue">2000 cal</small>
+                            <small>3000 cal</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="diet" class="form-label">Goal & Diet Type</label>
+                        <select id="diet" class="form-select">
+                            <option value="">No specific diet</option>
+                            <optgroup label="Wellness Goals">
+                                <option value="vegetarian">Vegetarian</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="gluten-free">Gluten Free</option>
+                                <option value="dairy-free">Dairy Free</option>
+                                <option value="low-fodmap">Low FODMAP</option>
+                            </optgroup>
+                            <optgroup label="Weight Management">
+                                <option value="ketogenic">Ketogenic</option>
+                                <option value="low-carb">Low Carb</option>
+                                <option value="low-fat">Low Fat</option>
+                                <option value="high-protein">High Protein</option>
+                            </optgroup>
+                            <optgroup label="Specialty Diets">
+                                <option value="paleo">Paleo</option>
+                                <option value="pescetarian">Pescetarian</option>
+                                <option value="whole30">Whole30</option>
+                                <option value="mediterranean">Mediterranean</option>
+                            </optgroup>
+                        </select>
+                        <div class="form-text">Select a diet type that aligns with your nutrition goals</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Meal Plan Focus (Optional)</label>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="quickMeals">
+                                    <label class="form-check-label" for="quickMeals">Quick meals (<30 min)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="budgetFriendly">
+                                    <label class="form-check-label" for="budgetFriendly">Budget-friendly</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="familyFriendly">
+                                    <label class="form-check-label" for="familyFriendly">Family-friendly</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exclude" class="form-label">Exclude Ingredients (optional)</label>
+                        <input type="text" class="form-control" id="exclude" placeholder="e.g., shellfish, peanuts (separate with commas)">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="generatePlanBtn">
+                            <i class="fas fa-calendar-alt"></i> Generate Meal Plan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="mealPlanResult" class="d-none">
+            <h2 class="mb-4">Your Meal Plan</h2>
+            
+            <div class="row g-4" id="mealPlanContainer">
+                <!-- Generated meal plan will appear here -->
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button id="saveToShoppingListBtn" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart"></i> Add All to Shopping List
+                </button>
+                <button id="printMealPlanBtn" class="btn btn-outline-secondary">
+                    <i class="fas fa-print"></i> Print Meal Plan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'includes/loading.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/meal_plan.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-5 fw-bold mb-3">AI Cooking Assistant</h1>
+        <p class="lead mb-4">
+            Search for recipes, get cooking guidance, and plan your meals with the help of AI.
+        </p>
+        
+        {% if error %}
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        
+        <form action="{{ url_for('search') }}" method="get" class="mb-4">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name="query" placeholder="Search recipes (e.g., pasta, vegetarian, dinner)" value="{{ search_query|default('') }}">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <select class="form-select" name="diet" aria-label="Diet preferences">
+                        <option value="">Any diet</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="gluten-free">Gluten Free</option>
+                        <option value="ketogenic">Ketogenic</option>
+                        <option value="paleo">Paleo</option>
+                        <option value="pescetarian">Pescetarian</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select class="form-select" name="intolerances" aria-label="Food intolerances">
+                        <option value="">No intolerances</option>
+                        <option value="dairy">Dairy</option>
+                        <option value="egg">Egg</option>
+                        <option value="gluten">Gluten</option>
+                        <option value="grain">Grain</option>
+                        <option value="peanut">Peanut</option>
+                        <option value="seafood">Seafood</option>
+                        <option value="tree-nut">Tree Nut</option>
+                        <option value="soy">Soy</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row gy-4">
+    {% if recipes %}
+        {% for recipe in recipes %}
+            <div class="col-md-6 col-lg-4">
+                {% include 'includes/recipe_card.html' %}
+            </div>
+        {% endfor %}
+    {% elif search_query %}
+        <div class="col-12 text-center">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No recipes found for "{{ search_query }}". Try different search terms or filters.
+            </div>
+        </div>
+    {% else %}
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">Recipe Search</h3>
+                    <p class="card-text">Find recipes based on ingredients, dietary preferences, or meal type.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-robot fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">AI Chef Assistant</h3>
+                    <p class="card-text">Get cooking guidance, tips, and help from our AI chef.</p>
+                    <a href="{{ url_for('chat') }}" class="btn btn-outline-primary">Chat with Chef AI</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">Meal Planning</h3>
+                    <p class="card-text">Generate meal plans based on your preferences and nutritional goals.</p>
+                    <a href="{{ url_for('meal_plan') }}" class="btn btn-outline-primary">Create Meal Plan</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% if recipes %}
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+    <a href="{{ url_for('meal_plan') }}" class="btn btn-primary">
+        <i class="fas fa-calendar-alt"></i> Create Meal Plan
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

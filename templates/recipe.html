@@ -1,0 +1,488 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ recipe.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="mb-2">{{ recipe.title }}</h1>
+        
+        <div class="recipe-meta">
+            <span class="badge bg-primary"><i class="fas fa-clock"></i> {{ recipe.readyInMinutes }} mins</span>
+            <span class="badge bg-secondary"><i class="fas fa-users"></i> {{ recipe.servings }} servings</span>
+            {% if recipe.vegetarian %}
+            <span class="badge bg-success"><i class="fas fa-leaf"></i> Vegetarian</span>
+            {% endif %}
+            {% if recipe.vegan %}
+            <span class="badge bg-success"><i class="fas fa-seedling"></i> Vegan</span>
+            {% endif %}
+            {% if recipe.glutenFree %}
+            <span class="badge bg-info"><i class="fas fa-bread-slice"></i> Gluten Free</span>
+            {% endif %}
+            {% if recipe.dairyFree %}
+            <span class="badge bg-info"><i class="fas fa-cheese"></i> Dairy Free</span>
+            {% endif %}
+            <span class="badge bg-warning"><i class="fas fa-fire"></i> {{ recipe.nutrition.nutrients[0].amount|int }} calories</span>
+        </div>
+        
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <button class="btn btn-primary btn-sm" id="addToShoppingListBtn" data-recipe-id="{{ recipe.id }}">
+                        <i class="fas fa-cart-plus"></i> Add to Shopping List
+                    </button>
+                    <span id="shoppingListFeedback" class="badge bg-success ms-2 d-none">Added to shopping list!</span>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-print"></i> Print
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="shareDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="shareDropdown">
+                            <li><a class="dropdown-item" href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fab fa-pinterest"></i> Pinterest</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-envelope"></i> Email</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="recipe-image">
+            <img src="{{ recipe.image }}" alt="{{ recipe.title }}" class="img-fluid">
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-info-circle"></i> Summary</h2>
+            </div>
+            <div class="card-body">
+                <div class="summary-text">
+                    {{ recipe.summary|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-list"></i> Ingredients</h2>
+            </div>
+            <div class="card-body">
+                <ul class="ingredients-list">
+                    {% for ingredient in recipe.extendedIngredients %}
+                    <li>
+                        <span class="ingredient-amount">{{ ingredient.measures.us.amount }} {{ ingredient.measures.us.unitShort }}</span>
+                        {{ ingredient.name }}
+                        {% if ingredient.notes %}
+                        <small class="text-muted">({{ ingredient.notes }})</small>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-chart-pie"></i> Nutrition Information</h2>
+            </div>
+            <div class="card-body">
+                {% if recipe.nutrition and recipe.nutrition.nutrients %}
+                <div>
+                    {% for nutrient in recipe.nutrition.nutrients[:8] %}
+                    <div class="nutrient-item">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ nutrient.name }}</span>
+                            <span>{{ nutrient.amount|round(1) }}{{ nutrient.unit }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {{ nutrient.percentOfDailyNeeds }}%;" 
+                                aria-valuenow="{{ nutrient.percentOfDailyNeeds }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">{{ nutrient.percentOfDailyNeeds|round(1) }}% of daily needs</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <button class="btn btn-sm btn-outline-primary" id="toggleNutritionButton" type="button" data-bs-toggle="collapse" data-bs-target="#fullNutritionInfo" aria-expanded="false" aria-controls="fullNutritionInfo">
+                        Show More Nutrition Information
+                    </button>
+                </div>
+                
+                <div class="collapse mt-3" id="fullNutritionInfo">
+                    <div class="card card-body bg-light">
+                        <div class="row">
+                            {% for nutrient in recipe.nutrition.nutrients[8:] %}
+                            <div class="col-md-6 mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ nutrient.name }}</span>
+                                    <span>{{ nutrient.amount|round(1) }}{{ nutrient.unit }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">Nutrition information not available for this recipe.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-utensils"></i> Instructions</h2>
+            </div>
+            <div class="card-body">
+                {% if recipe.analyzedInstructions and recipe.analyzedInstructions|length > 0 %}
+                <ol class="instructions-list">
+                    {% for step in recipe.analyzedInstructions[0].steps %}
+                    <li>
+                        <div class="instructions-text">{{ step.step }}</div>
+                        {% if step.ingredients and step.ingredients|length > 0 %}
+                        <div class="mt-2">
+                            <small class="text-muted">Ingredients used: 
+                                {% for ingredient in step.ingredients %}
+                                <span class="badge bg-light text-dark">{{ ingredient.name }}</span>
+                                {% endfor %}
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        {% if step.equipment and step.equipment|length > 0 %}
+                        <div class="mt-1">
+                            <small class="text-muted">Equipment needed: 
+                                {% for equip in step.equipment %}
+                                <span class="badge bg-light text-dark">{{ equip.name }}</span>
+                                {% endfor %}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ol>
+                {% elif recipe.instructions %}
+                <div class="instructions-text">
+                    {{ recipe.instructions|safe }}
+                </div>
+                {% else %}
+                <p class="text-muted">No instructions available for this recipe.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recipe.videoUrl or (recipe.videos and recipe.videos|length > 0) %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-video"></i> Recipe Video</h2>
+            </div>
+            <div class="card-body text-center">
+                {% if recipe.videoUrl %}
+                <div class="ratio ratio-16x9">
+                    <iframe src="{{ recipe.videoUrl|replace('watch?v=', 'embed/') }}" 
+                            title="{{ recipe.title }}" 
+                            allowfullscreen></iframe>
+                </div>
+                {% elif recipe.videos and recipe.videos|length > 0 %}
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/{{ recipe.videos[0].youTubeId }}" 
+                            title="{{ recipe.title }}" 
+                            allowfullscreen></iframe>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mb-4" id="recipeVideoSection">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-youtube"></i> Recipe Videos on YouTube</h2>
+            </div>
+            <div class="card-body">
+                <div id="recipeVideos" class="row g-3">
+                    <!-- YouTube videos will be loaded here via JavaScript -->
+                    <div class="col-12 text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading videos...</span>
+                        </div>
+                        <p>Loading YouTube videos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if similar_recipes and similar_recipes|length > 0 %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-3">Similar Recipes You Might Like</h2>
+        <div class="row g-4">
+            {% for similar in similar_recipes %}
+            <div class="col-md-4">
+                <div class="card recipe-card h-100">
+                    {% if similar.image %}
+                    <img src="{{ similar.image }}" class="card-img-top" alt="{{ similar.title }}">
+                    {% else %}
+                    <div class="placeholder-img">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ similar.title }}</h5>
+                        <div class="recipe-card-meta">
+                            <span class="badge bg-primary"><i class="fas fa-clock"></i> {{ similar.readyInMinutes }} mins</span>
+                            <span class="badge bg-secondary"><i class="fas fa-users"></i> {{ similar.servings }} servings</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('recipe', recipe_id=similar.id) }}" class="btn btn-sm btn-outline-primary">View Recipe</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-comments"></i> Ask Chef AI About This Recipe</h2>
+            </div>
+            <div class="card-body">
+                <p>Have questions about this recipe? Need help with substitutions, techniques, or troubleshooting?</p>
+                <a href="{{ url_for('chat') }}?recipe={{ recipe.id }}" class="btn btn-primary">
+                    <i class="fas fa-robot"></i> Chat with Chef AI about this recipe
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle button for nutrition information
+        const toggleNutritionButton = document.getElementById('toggleNutritionButton');
+        if (toggleNutritionButton) {
+            toggleNutritionButton.addEventListener('click', function() {
+                const expanded = this.getAttribute('aria-expanded') === 'true';
+                this.textContent = expanded ? 'Show More Nutrition Information' : 'Show Less Nutrition Information';
+            });
+        }
+        
+        // Initialize nutrition visualization 
+        const nutrientBars = document.querySelectorAll('.progress-bar');
+        nutrientBars.forEach(bar => {
+            const value = parseFloat(bar.getAttribute('aria-valuenow'));
+            const nutrientName = bar.closest('.nutrient-item').querySelector('.d-flex span:first-child').textContent;
+            
+            // Assign colors based on nutrient type and value
+            if (['Fat', 'Saturated Fat', 'Sodium', 'Sugar', 'Cholesterol'].includes(nutrientName)) {
+                // For nutrients we want to limit
+                if (value > 50) {
+                    bar.classList.add('bg-danger');
+                } else if (value > 25) {
+                    bar.classList.add('bg-warning');
+                } else {
+                    bar.classList.add('bg-success');
+                }
+            } else if (['Protein', 'Fiber', 'Potassium', 'Vitamin A', 'Vitamin C', 'Calcium', 'Iron', 'Magnesium'].includes(nutrientName) || nutrientName.startsWith('Vitamin')) {
+                // For nutrients we want to consume more of
+                if (value > 50) {
+                    bar.classList.add('bg-success');
+                } else if (value > 25) {
+                    bar.classList.add('bg-info');
+                } else {
+                    bar.classList.add('bg-secondary');
+                }
+            } else if (nutrientName === 'Calories') {
+                bar.classList.add('bg-primary');
+            } else if (nutrientName === 'Carbohydrates') {
+                bar.classList.add('bg-info');
+            } else {
+                bar.classList.add('bg-secondary');
+            }
+        });
+        
+        // Add to shopping list functionality
+        const addToShoppingListBtn = document.getElementById('addToShoppingListBtn');
+        if (addToShoppingListBtn) {
+            addToShoppingListBtn.addEventListener('click', function() {
+                const recipeId = this.getAttribute('data-recipe-id');
+                const feedback = document.getElementById('shoppingListFeedback');
+                
+                // Disable button to prevent multiple clicks
+                this.disabled = true;
+                
+                fetch(`/api/shopping-list/add/${recipeId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        // Show error message
+                        const errorAlert = document.createElement('div');
+                        errorAlert.className = 'alert alert-warning alert-dismissible fade show mt-3';
+                        errorAlert.setAttribute('role', 'alert');
+                        errorAlert.innerHTML = `
+                            <i class="fas fa-exclamation-triangle me-2"></i> ${data.error}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        
+                        // Insert the alert after the button
+                        this.parentNode.parentNode.after(errorAlert);
+                    } else {
+                        // Show success message
+                        feedback.textContent = data.message || 'Added to shopping list!';
+                        feedback.classList.remove('d-none');
+                        
+                        // Update shopping list count in navbar if it exists
+                        if (typeof updateShoppingListCount === 'function') {
+                            updateShoppingListCount();
+                        }
+                        
+                        // Hide success message after 3 seconds
+                        setTimeout(() => {
+                            feedback.classList.add('d-none');
+                        }, 3000);
+                    }
+                    
+                    // Re-enable button
+                    this.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Show error message
+                    const errorAlert = document.createElement('div');
+                    errorAlert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                    errorAlert.setAttribute('role', 'alert');
+                    errorAlert.innerHTML = `
+                        <i class="fas fa-exclamation-circle me-2"></i> Failed to add to shopping list. Please try again later.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    // Insert the alert after the button
+                    this.parentNode.parentNode.after(errorAlert);
+                    
+                    // Re-enable button
+                    this.disabled = false;
+                });
+            });
+        }
+        
+        // Load recipe videos from YouTube
+        const recipeTitle = document.querySelector('h1').textContent;
+        fetch(`/api/recipe-videos/${encodeURIComponent(recipeTitle)}`)
+        .then(response => response.json())
+        .then(data => {
+            const videosContainer = document.getElementById('recipeVideos');
+            videosContainer.innerHTML = '';
+            
+            if (data.error) {
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'col-12 text-center';
+                errorMsg.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> ${data.error}
+                    </div>
+                `;
+                videosContainer.appendChild(errorMsg);
+                return;
+            }
+            
+            if (data.videos && data.videos.length > 0) {
+                data.videos.forEach(video => {
+                    const videoCol = document.createElement('div');
+                    videoCol.className = 'col-md-6 col-lg-4';
+                    videoCol.innerHTML = `
+                        <div class="card h-100">
+                            <div class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/${video.youTubeId}" title="${video.title}" allowfullscreen></iframe>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${video.title}</h5>
+                                <p class="card-text small">${video.shortTitle || ''}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">${video.views ? video.views + ' views' : ''}</small>
+                            </div>
+                        </div>
+                    `;
+                    videosContainer.appendChild(videoCol);
+                });
+            } else {
+                const noVideos = document.createElement('div');
+                noVideos.className = 'col-12 text-center';
+                noVideos.innerHTML = `
+                    <p class="text-muted">No videos found for this recipe.</p>
+                `;
+                videosContainer.appendChild(noVideos);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading videos:', error);
+            
+            const videosContainer = document.getElementById('recipeVideos');
+            videosContainer.innerHTML = '';
+            
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'col-12 text-center';
+            errorMsg.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> Failed to load videos. Please try again later.
+                </div>
+            `;
+            videosContainer.appendChild(errorMsg);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <i class="fas fa-utensils"></i> AI Cooking Assistant
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.path == url_for('index') }}" href="{{ url_for('index') }}">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.path == url_for('chat') }}" href="{{ url_for('chat') }}">
+                        <i class="fas fa-robot"></i> Chef AI
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.path == url_for('meal_plan') }}" href="{{ url_for('meal_plan') }}">
+                        <i class="fas fa-calendar-alt"></i> Meal Plan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.path == url_for('shopping_list') }}" href="{{ url_for('shopping_list') }}">
+                        <i class="fas fa-shopping-basket"></i> Shopping List
+                        <span id="shoppingListCount" class="badge rounded-pill bg-primary" style="display: none;"></span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="d-flex align-items-center">
+                <button id="themeToggle" class="btn btn-sm btn-outline-secondary ms-2" title="Switch to Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>

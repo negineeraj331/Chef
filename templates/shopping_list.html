@@ -1,0 +1,537 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <h1 class="mb-3">Smart Shopping List</h1>
+        <p class="lead">Your organized shopping list based on the recipes you've selected.</p>
+        
+        <div id="shoppingListContainer">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Selected Recipes</h2>
+                    <div id="selectedRecipes" class="mb-3">
+                        <div class="alert alert-info" id="noRecipesMessage">
+                            <i class="fas fa-info-circle"></i> No recipes added to your shopping list yet. 
+                            Add recipes by clicking "Add to Shopping List" on recipe pages.
+                        </div>
+                        <div id="recipesList" class="row g-3">
+                            <!-- Selected recipes will be displayed here -->
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button id="clearShoppingListBtn" class="btn btn-outline-danger" disabled>
+                            <i class="fas fa-trash-alt"></i> Clear All
+                        </button>
+                        <button id="generateShoppingListBtn" class="btn btn-primary ms-2" disabled>
+                            <i class="fas fa-list-check"></i> Generate Shopping List
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="loadingSection" class="text-center my-4 d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Generating your shopping list...</p>
+            </div>
+            
+            <div id="shoppingListResult" class="d-none">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="card-title mb-0">Your Shopping List</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="aislesList">
+                            <!-- Shopping list items grouped by aisle will be displayed here -->
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button id="printShoppingListBtn" class="btn btn-outline-primary">
+                                <i class="fas fa-print"></i> Print List
+                            </button>
+                            <button id="emailShoppingListBtn" class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope"></i> Email List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Recipes
+    </a>
+    <a href="{{ url_for('meal_plan') }}" class="btn btn-primary">
+        <i class="fas fa-calendar-alt"></i> Create Meal Plan
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectedRecipesContainer = document.getElementById('recipesList');
+    const noRecipesMessage = document.getElementById('noRecipesMessage');
+    const clearShoppingListBtn = document.getElementById('clearShoppingListBtn');
+    const generateShoppingListBtn = document.getElementById('generateShoppingListBtn');
+    const loadingSection = document.getElementById('loadingSection');
+    const shoppingListResult = document.getElementById('shoppingListResult');
+    const aislesList = document.getElementById('aislesList');
+    const printShoppingListBtn = document.getElementById('printShoppingListBtn');
+    const emailShoppingListBtn = document.getElementById('emailShoppingListBtn');
+    
+    let shoppingList = [];
+    
+    // Function to load shopping list from session
+    function loadShoppingList() {
+        // Make API call to get current shopping list
+        fetch('/api/get-shopping-list')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                if (data.aisles && data.aisles.length > 0) {
+                    // We have a generated shopping list
+                    displayGeneratedShoppingList(data);
+                    shoppingListResult.classList.remove('d-none');
+                } else {
+                    // We don't have a generated list yet, just recipes
+                    getSelectedRecipes();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading shopping list:', error);
+                showError('Failed to load shopping list. Please try again.');
+            });
+    }
+    
+    // Function to get selected recipes
+    function getSelectedRecipes() {
+        // Make API call to get the recipe IDs in the shopping list
+        fetch('/api/get-shopping-list')
+            .then(response => response.json())
+            .then(data => {
+                // Check for both formats: items array or recipe_ids array
+                let recipeIds = [];
+                
+                if (data.items && Array.isArray(data.items)) {
+                    recipeIds = data.items;
+                } else if (data.recipe_ids && Array.isArray(data.recipe_ids)) {
+                    recipeIds = data.recipe_ids;
+                } else if (Array.isArray(data)) {
+                    recipeIds = data;
+                }
+                
+                shoppingList = recipeIds;
+                
+                // If no recipes, show message
+                if (!shoppingList || shoppingList.length === 0) {
+                    noRecipesMessage.classList.remove('d-none');
+                    selectedRecipesContainer.classList.add('d-none');
+                    clearShoppingListBtn.disabled = true;
+                    generateShoppingListBtn.disabled = true;
+                    return;
+                }
+                
+                // Hide message and show recipes
+                noRecipesMessage.classList.add('d-none');
+                selectedRecipesContainer.classList.remove('d-none');
+                clearShoppingListBtn.disabled = false;
+                generateShoppingListBtn.disabled = false;
+                
+                // Load from session storage if available
+                if (sessionStorage.getItem('viewedRecipes')) {
+                    try {
+                        const viewedRecipes = JSON.parse(sessionStorage.getItem('viewedRecipes'));
+                        // Filter by recipes in shopping list
+                        const recipesInList = viewedRecipes.filter(recipe => 
+                            shoppingList.includes(recipe.id) || shoppingList.includes(recipe.id.toString()));
+                        
+                        if (recipesInList.length > 0) {
+                            displayRecipeCards(recipesInList);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing viewedRecipes from sessionStorage:', e);
+                    }
+                }
+                
+                // Fallback: if no cached recipes found, show generic cards
+                displayGenericRecipeCards(shoppingList);
+            })
+            .catch(error => {
+                console.error('Error loading recipes:', error);
+                showError('Failed to load selected recipes. Please try again.');
+            });
+    }
+    
+    // Function to display generic recipe cards when no details are available
+    function displayGenericRecipeCards(recipeIds) {
+        selectedRecipesContainer.innerHTML = '';
+        
+        recipeIds.forEach(recipeId => {
+            const recipeCard = document.createElement('div');
+            recipeCard.className = 'col-md-4';
+            
+            recipeCard.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Recipe #${recipeId}</h5>
+                        <p class="card-text text-muted">Added to shopping list</p>
+                        <button class="btn btn-sm btn-danger remove-recipe" data-recipe-id="${recipeId}">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                        <a href="/recipe/${recipeId}" class="btn btn-sm btn-outline-primary ms-1">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            selectedRecipesContainer.appendChild(recipeCard);
+        });
+        
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-recipe').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute('data-recipe-id');
+                removeFromShoppingList(recipeId);
+            });
+        });
+    }
+    
+    // Function to display recipe cards
+    function displayRecipeCards(recipes) {
+        selectedRecipesContainer.innerHTML = '';
+        
+        recipes.forEach(recipe => {
+            const recipeCard = document.createElement('div');
+            recipeCard.className = 'col-md-4';
+            
+            recipeCard.innerHTML = `
+                <div class="card h-100">
+                    ${recipe.image ? `<img src="${recipe.image}" class="card-img-top" alt="${recipe.title}" style="height: 140px; object-fit: cover;">` : ''}
+                    <div class="card-body">
+                        <h5 class="card-title">${recipe.title}</h5>
+                        <button class="btn btn-sm btn-danger remove-recipe" data-recipe-id="${recipe.id}">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                        <a href="/recipe/${recipe.id}" class="btn btn-sm btn-outline-primary ms-1">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            selectedRecipesContainer.appendChild(recipeCard);
+        });
+        
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-recipe').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute('data-recipe-id');
+                removeFromShoppingList(recipeId);
+            });
+        });
+    }
+    
+    // Function to remove a recipe from the shopping list
+    function removeFromShoppingList(recipeId) {
+        fetch('/api/remove-from-shopping-list', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                recipe_id: recipeId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            
+            // Update session storage count
+            if (typeof sessionStorage !== 'undefined') {
+                const currentCount = parseInt(sessionStorage.getItem('shopping_list_count') || '0');
+                if (currentCount > 0) {
+                    sessionStorage.setItem('shopping_list_count', (currentCount - 1).toString());
+                }
+            }
+            
+            // Reload the shopping list
+            loadShoppingList();
+        })
+        .catch(error => {
+            console.error('Error removing recipe:', error);
+            showError('Failed to remove recipe. Please try again.');
+        });
+    }
+    
+    // Function to clear the entire shopping list
+    function clearShoppingList() {
+        fetch('/api/clear-shopping-list', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            
+            // Clear session storage count
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.setItem('shopping_list_count', '0');
+            }
+            
+            // Reload the shopping list
+            loadShoppingList();
+            
+            // Hide the generated shopping list if it's visible
+            shoppingListResult.classList.add('d-none');
+        })
+        .catch(error => {
+            console.error('Error clearing shopping list:', error);
+            showError('Failed to clear shopping list. Please try again.');
+        });
+    }
+    
+    // Function to generate the shopping list
+    function generateShoppingList() {
+        // Show loading indicator
+        loadingSection.classList.remove('d-none');
+        
+        fetch('/api/get-shopping-list')
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                loadingSection.classList.add('d-none');
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                // Display the shopping list
+                displayGeneratedShoppingList(data);
+                
+                // Show the result section
+                shoppingListResult.classList.remove('d-none');
+            })
+            .catch(error => {
+                // Hide loading indicator
+                loadingSection.classList.add('d-none');
+                
+                console.error('Error generating shopping list:', error);
+                showError('Failed to generate shopping list. Please try again.');
+            });
+    }
+    
+    // Function to display the generated shopping list
+    function displayGeneratedShoppingList(data) {
+        aislesList.innerHTML = '';
+        
+        if (!data.aisles || data.aisles.length === 0) {
+            aislesList.innerHTML = '<div class="alert alert-info">No items in your shopping list.</div>';
+            return;
+        }
+        
+        // Create accordion for aisles
+        const accordionId = 'aislesAccordion';
+        const accordion = document.createElement('div');
+        accordion.className = 'accordion';
+        accordion.id = accordionId;
+        
+        // Add aisles to accordion
+        data.aisles.forEach((aisle, index) => {
+            const aisleId = `aisle-${index}`;
+            const accordionItem = document.createElement('div');
+            accordionItem.className = 'accordion-item';
+            
+            accordionItem.innerHTML = `
+                <h2 class="accordion-header" id="heading-${aisleId}">
+                    <button class="accordion-button ${index > 0 ? 'collapsed' : ''}" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapse-${aisleId}" 
+                            aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="collapse-${aisleId}">
+                        ${aisle.aisle} (${aisle.items.length} items)
+                    </button>
+                </h2>
+                <div id="collapse-${aisleId}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" 
+                     aria-labelledby="heading-${aisleId}" data-bs-parent="#${accordionId}">
+                    <div class="accordion-body">
+                        <ul class="list-group shopping-list-items">
+                            ${aisle.items.map(item => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="shopping-item-name">${item.name}</span>
+                                        <small class="text-muted d-block">${item.measures.us.amount} ${item.measures.us.unit}</small>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input shopping-item-check" type="checkbox" id="item-${item.id}">
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            accordion.appendChild(accordionItem);
+        });
+        
+        aislesList.appendChild(accordion);
+        
+        // Add event listeners for checkboxes
+        document.querySelectorAll('.shopping-item-check').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const listItem = this.closest('.list-group-item');
+                if (this.checked) {
+                    listItem.classList.add('text-decoration-line-through', 'text-muted');
+                } else {
+                    listItem.classList.remove('text-decoration-line-through', 'text-muted');
+                }
+            });
+        });
+    }
+    
+    // Function to print the shopping list
+    function printShoppingList() {
+        const printWindow = window.open('', '_blank');
+        
+        // Create print content
+        let printContent = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Shopping List</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    h1 { text-align: center; }
+                    h2 { margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                    ul { list-style-type: none; padding-left: 0; }
+                    li { padding: 8px 0; border-bottom: 1px dashed #eee; }
+                    .item-amount { color: #666; font-size: 0.9em; }
+                    @media print {
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Shopping List</h1>
+                <p class="no-print"><button onclick="window.print()">Print</button></p>
+        `;
+        
+        // Add each aisle
+        document.querySelectorAll('.accordion-item').forEach(aisle => {
+            const aisleName = aisle.querySelector('.accordion-button').textContent.trim();
+            printContent += `<h2>${aisleName}</h2><ul>`;
+            
+            // Add items for this aisle
+            aisle.querySelectorAll('.list-group-item').forEach(item => {
+                const itemName = item.querySelector('.shopping-item-name').textContent;
+                const itemAmount = item.querySelector('small').textContent;
+                
+                printContent += `
+                    <li>
+                        <input type="checkbox"> ${itemName} 
+                        <span class="item-amount">(${itemAmount})</span>
+                    </li>
+                `;
+            });
+            
+            printContent += `</ul>`;
+        });
+        
+        printContent += `
+            </body>
+            </html>
+        `;
+        
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.focus();
+    }
+    
+    // Function to email the shopping list
+    function emailShoppingList() {
+        // Get all items
+        let emailContent = 'Shopping List:\n\n';
+        
+        document.querySelectorAll('.accordion-item').forEach(aisle => {
+            const aisleName = aisle.querySelector('.accordion-button').textContent.trim();
+            emailContent += `${aisleName}\n`;
+            
+            // Add items for this aisle
+            aisle.querySelectorAll('.list-group-item').forEach(item => {
+                const itemName = item.querySelector('.shopping-item-name').textContent;
+                const itemAmount = item.querySelector('small').textContent;
+                
+                emailContent += `- ${itemName} (${itemAmount})\n`;
+            });
+            
+            emailContent += '\n';
+        });
+        
+        // Create mailto link
+        const mailtoURL = 'mailto:?subject=My Shopping List&body=' + encodeURIComponent(emailContent);
+        window.location.href = mailtoURL;
+    }
+    
+    // Function to show error messages
+    function showError(message) {
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger alert-dismissible fade show mb-4';
+        errorAlert.setAttribute('role', 'alert');
+        errorAlert.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Insert the alert at the top of the container
+        const container = document.getElementById('shoppingListContainer');
+        container.insertBefore(errorAlert, container.firstChild);
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            errorAlert.querySelector('.btn-close').click();
+        }, 5000);
+    }
+    
+    // Add event listeners
+    if (clearShoppingListBtn) {
+        clearShoppingListBtn.addEventListener('click', clearShoppingList);
+    }
+    
+    if (generateShoppingListBtn) {
+        generateShoppingListBtn.addEventListener('click', generateShoppingList);
+    }
+    
+    if (printShoppingListBtn) {
+        printShoppingListBtn.addEventListener('click', printShoppingList);
+    }
+    
+    if (emailShoppingListBtn) {
+        emailShoppingListBtn.addEventListener('click', emailShoppingList);
+    }
+    
+    // Load shopping list on page load
+    loadShoppingList();
+});
+</script>
+{% endblock %}

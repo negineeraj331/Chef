@@ -1,0 +1,512 @@
+:root {
+    /* Light mode colors */
+    --primary-light: #FF6B6B;
+    --secondary-light: #4ECDC4;
+    --background-light: #FFFFFF;
+    --text-light: #2D3436;
+    --card-bg-light: #FFFFFF;
+    --card-border-light: rgba(0, 0, 0, 0.125);
+    --muted-light: #6c757d;
+    --input-bg-light: #FFFFFF;
+    --input-border-light: #ced4da;
+    
+    /* Dark mode colors */
+    --primary-dark: #FF8787;
+    --secondary-dark: #66D9E8;
+    --background-dark: #1a1d20;  /* Darker background */
+    --text-dark: #F5F6FA;
+    --card-bg-dark: #2b3035;     /* Slightly lighter than bg for contrast */
+    --card-border-dark: rgba(255, 255, 255, 0.08);
+    --muted-dark: #adb5bd;
+    --input-bg-dark: #212529;
+    --input-border-dark: #495057;
+    
+    /* Common spacing */
+    --spacing: 16px;
+}
+
+/* Theme transition class */
+.theme-transition {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease,
+                box-shadow 0.5s ease !important;
+}
+
+.theme-transition * {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease,
+                box-shadow 0.5s ease !important;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-light);
+    color: var(--text-light);
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
+main {
+    flex: 1;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+/* Card styling */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: var(--spacing);
+    border: 1px solid var(--card-border-light);
+    background-color: var(--card-bg-light);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-weight: 600;
+}
+
+/* Recipe cards */
+.recipe-card {
+    height: 100%;
+}
+
+.recipe-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.placeholder-img {
+    height: 200px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recipe-card-meta {
+    margin-bottom: 10px;
+}
+
+.recipe-card-meta .badge {
+    margin-right: 5px;
+}
+
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Recipe details page */
+.recipe-meta {
+    margin-bottom: 15px;
+}
+
+.recipe-meta .badge {
+    margin-right: 8px;
+}
+
+.recipe-image img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ingredients-list, .instructions-list {
+    padding-left: 20px;
+}
+
+.ingredients-list li, .instructions-list li {
+    margin-bottom: 10px;
+}
+
+.ingredient-amount {
+    font-weight: 600;
+}
+
+.summary-text, .instructions-text {
+    line-height: 1.8;
+}
+
+/* Nutrition visualization */
+.nutrient-item {
+    margin-bottom: 15px;
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+/* Chat interface */
+.chat-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.chat-container {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.chat-message {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.chat-message.user {
+    justify-content: flex-end;
+}
+
+.chat-message-content {
+    max-width: 80%;
+    padding: 12px 15px;
+    border-radius: 15px;
+}
+
+.chat-message.assistant .chat-message-content {
+    background-color: #f0f2f5;
+    color: #333;
+    border-top-left-radius: 0;
+}
+
+.chat-message.user .chat-message-content {
+    background-color: var(--primary-light);
+    color: white;
+    border-top-right-radius: 0;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.loading-spinner {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Theme-specific colors */
+.btn-primary {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #ff5252;
+    border-color: #ff5252;
+}
+
+.text-primary {
+    color: var(--primary-light) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-light) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+    color: white;
+}
+
+/* Footer styling */
+.footer {
+    margin-top: auto;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .chat-message-content {
+        max-width: 90%;
+    }
+}
+
+/* Dark mode styles */
+[data-bs-theme="dark"] {
+    --bs-body-bg: var(--background-dark);
+    --bs-body-color: var(--text-dark);
+    
+    background-color: var(--background-dark);
+    color: var(--text-dark);
+}
+
+/* Navbar and Footer Dark Mode */
+[data-bs-theme="dark"] .navbar,
+[data-bs-theme="dark"] .footer {
+    background-color: #141619 !important;
+    border-color: #212529;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] .navbar-brand {
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+[data-bs-theme="dark"] .nav-link:hover,
+[data-bs-theme="dark"] .nav-link:focus,
+[data-bs-theme="dark"] .nav-link.active {
+    color: var(--primary-dark);
+}
+
+/* Card Dark Mode */
+[data-bs-theme="dark"] .card {
+    background-color: var(--card-bg-dark);
+    border-color: var(--card-border-dark);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .card-header {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-bottom-color: var(--card-border-dark);
+}
+
+[data-bs-theme="dark"] .card-footer {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-top-color: var(--card-border-dark);
+}
+
+/* Form Elements Dark Mode */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--input-bg-dark);
+    border-color: var(--input-border-dark);
+    color: var(--text-dark);
+}
+
+[data-bs-theme="dark"] .form-check-input {
+    background-color: var(--input-bg-dark);
+    border-color: var(--input-border-dark);
+}
+
+[data-bs-theme="dark"] .form-text {
+    color: var(--muted-dark);
+}
+
+/* Button Dark Mode */
+[data-bs-theme="dark"] .btn-primary {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+[data-bs-theme="dark"] .btn-primary:hover,
+[data-bs-theme="dark"] .btn-primary:focus {
+    background-color: #ff7070;
+    border-color: #ff7070;
+}
+
+[data-bs-theme="dark"] .btn-secondary {
+    background-color: var(--secondary-dark);
+    border-color: var(--secondary-dark);
+}
+
+[data-bs-theme="dark"] .text-primary {
+    color: var(--primary-dark) !important;
+}
+
+[data-bs-theme="dark"] .text-secondary {
+    color: var(--secondary-dark) !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+    color: var(--muted-dark) !important;
+}
+
+[data-bs-theme="dark"] .bg-primary {
+    background-color: var(--primary-dark) !important;
+}
+
+[data-bs-theme="dark"] .bg-secondary {
+    background-color: var(--secondary-dark) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary {
+    color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+[data-bs-theme="dark"] .btn-outline-primary:hover,
+[data-bs-theme="dark"] .btn-outline-primary:focus {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--text-dark);
+}
+
+/* Chat Interface Dark Mode */
+[data-bs-theme="dark"] .chat-message.assistant .chat-message-content {
+    background-color: #3a4046;
+    color: var(--text-dark);
+}
+
+[data-bs-theme="dark"] .chat-message.user .chat-message-content {
+    background-color: var(--primary-dark);
+}
+
+/* Loading and Placeholder Dark Mode */
+[data-bs-theme="dark"] .loading-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+[data-bs-theme="dark"] .loading-spinner {
+    background-color: var(--card-bg-dark);
+    color: var(--text-dark);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .placeholder-img {
+    background-color: #2b3035;
+}
+
+/* Modal Dark Mode */
+[data-bs-theme="dark"] .modal-content {
+    background-color: var(--card-bg-dark);
+    border-color: var(--card-border-dark);
+}
+
+[data-bs-theme="dark"] .modal-header {
+    border-bottom-color: var(--card-border-dark);
+}
+
+[data-bs-theme="dark"] .modal-footer {
+    border-top-color: var(--card-border-dark);
+}
+
+/* Badge and Alert Dark Mode */
+[data-bs-theme="dark"] .badge.bg-light {
+    background-color: #2b3035 !important;
+    color: var(--text-dark);
+}
+
+[data-bs-theme="dark"] .alert {
+    border-color: var(--card-border-dark);
+}
+
+/* Table Dark Mode */
+[data-bs-theme="dark"] .table {
+    color: var(--text-dark);
+    border-color: var(--card-border-dark);
+}
+
+[data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-bs-theme="dark"] .table-hover>tbody>tr:hover>* {
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+/* List Group Dark Mode */
+[data-bs-theme="dark"] .list-group-item {
+    background-color: var(--card-bg-dark);
+    border-color: var(--card-border-dark);
+    color: var(--text-dark);
+}
+
+/* Code blocks and pre Dark Mode */
+[data-bs-theme="dark"] pre,
+[data-bs-theme="dark"] code {
+    background-color: #212529;
+    color: #f8f9fa;
+    border-color: var(--card-border-dark);
+}
+
+/* Progress Bar Dark Mode */
+[data-bs-theme="dark"] .progress {
+    background-color: #212529;
+}
+
+/* Tooltips and Popovers Dark Mode */
+[data-bs-theme="dark"] .tooltip-inner,
+[data-bs-theme="dark"] .popover {
+    background-color: #000;
+    border-color: var(--card-border-dark);
+}
+
+[data-bs-theme="dark"] .bs-popover-auto[data-popper-placement^=top]>.popover-arrow::after, 
+[data-bs-theme="dark"] .bs-popover-top>.popover-arrow::after {
+    border-top-color: #000;
+}
+
+/* Recipe card in dark mode */
+[data-bs-theme="dark"] .recipe-card .card-body {
+    background-color: var(--card-bg-dark);
+}
+
+/* Back to top button dark mode */
+[data-bs-theme="dark"] #backToTop {
+    background-color: var(--primary-dark);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Shopping list count badge dark mode */
+[data-bs-theme="dark"] #shoppingListCount {
+    background-color: var(--primary-dark) !important;
+    color: #fff;
+}
+
+/* AI Provider badge styling */
+.provider-badge {
+    text-align: right;
+    padding-top: 4px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* AI Provider dropdown styling */
+#aiProvider {
+    min-width: 120px;
+    font-size: 0.9rem;
+}
